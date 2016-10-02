@@ -1,0 +1,9 @@
+---------------------------  Seoho_PMSM.pjt - Debug  ---------------------------
+[12_SCI_BC.c] "C:\Program Files\Texas Instruments\C2000 Code Generation Tools 5.2.4\bin\cl2000" -gt -fr"D:/Seoho/1. HSPMSM/Source_File/Seoho_PMSM_110626/Debug" -i"D:/Seoho/1. HSPMSM/Source_File/Seoho_PMSM_110626/DSP2833x_include" -i"D:/Seoho/1. HSPMSM/Source_File/Seoho_PMSM_110626/PMSM_include" -d"_DEBUG" -d"LARGE_MODEL" -ml -mt -v28 --float_support=fpu32 -@"../Debug.lkf" "12_SCI_BC.c"
+"12_SCI_BC.c", line 454: error: identifier "share_time" is undefined
+1 error detected in the compilation of "12_SCI_BC.c".
+
+>> Compilation failure
+
+Build Complete,
+  1 Errors, 0 Warnings, 0 Remarks.
