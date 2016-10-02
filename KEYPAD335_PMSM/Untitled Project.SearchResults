@@ -1,0 +1,25 @@
+---- RxBuf Matches (28 in 1 files) ----
+rs232_MMItoPANEL.c (source\mcu): unsigned char RxBuf[9];
+rs232_MMItoPANEL.c (source\mcu):				RxBuf[0] = 0xAB;
+rs232_MMItoPANEL.c (source\mcu):				RxBuf[1] = 0xCD;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[2] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[3] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[4] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[5] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[6] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[7] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			RxBuf[8] = RXD0;
+rs232_MMItoPANEL.c (source\mcu):			CRC.Word = CRC16(RxBuf,7);
+rs232_MMItoPANEL.c (source\mcu):			RxType = RxBuf[2];
+rs232_MMItoPANEL.c (source\mcu):			RxAddr = ((unsigned int)RxBuf[3]<<8) | RxBuf[4] ;
+rs232_MMItoPANEL.c (source\mcu):			RxData = ((unsigned int)RxBuf[5]<<8) | RxBuf[6] ;
+rs232_MMItoPANEL.c (source\mcu):			RxCRC   = ((unsigned int)RxBuf[7]<<8) | RxBuf[8] ;
+rs232_MMItoPANEL.c (source\mcu):			if((RxBuf[7] == CRC.Byte.b1) && (RxBuf[8] == CRC.Byte.b0))
+rs232_MMItoPANEL.c (source\mcu):					RxBuf[2] = RESPONSE;
+rs232_MMItoPANEL.c (source\mcu):					CRC.Word = CRC16(RxBuf,7);
+rs232_MMItoPANEL.c (source\mcu):					for(c=0;c<7;c++)TX0_char(RxBuf[c]);
+rs232_MMItoPANEL.c (source\mcu):					RxBuf[2] = SEND;
+rs232_MMItoPANEL.c (source\mcu):					RxBuf[5] = (char)(DATA_Registers[RxAddr]>>8);
+rs232_MMItoPANEL.c (source\mcu):					RxBuf[6] = (char)DATA_Registers[RxAddr];
+rs232_MMItoPANEL.c (source\mcu):					CRC.Word = CRC16(RxBuf,7);
+rs232_MMItoPANEL.c (source\mcu):					for(c=0;c<7;c++)	TX0_char(RxBuf[c]);
