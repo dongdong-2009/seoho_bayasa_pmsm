@@ -30,7 +30,7 @@
       
       
       
-    <Wnd0>
+    <Wnd1>
         <Tabs>
           
           <Tab>
@@ -41,20 +41,20 @@
           </Tab>
         <Tab><Identity>TabID-9658-22856</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab><Tab><Identity>TabID-9074-27575</Identity><TabName>Find in Files</TabName><Factory>Find-in-Files</Factory><Session/></Tab><Tab><Identity>TabID-6460-27624</Identity><TabName>Tool Output</TabName><Factory>Tool-Output</Factory><Session/></Tab></Tabs>
         
-      <SelectedTab>1</SelectedTab></Wnd0><Wnd2><Tabs><Tab><Identity>TabID-1295-28130</Identity><TabName>Source Browser</TabName><Factory>SourceBrowser</Factory><Session><TypeFilter>2147483647</TypeFilter><FileFilter>1</FileFilter></Session></Tab><Tab><Identity>TabID-13904-28303</Identity><TabName>Workspace</TabName><Factory>Workspace</Factory><Session><NodeDict><ExpandedNode>AVR2560</ExpandedNode><ExpandedNode>AVR2560/Output</ExpandedNode></NodeDict></Session></Tab></Tabs><SelectedTab>1</SelectedTab></Wnd2><Wnd4><Tabs><Tab><Identity>TabID-11863-18953</Identity><TabName>Watch</TabName><Factory>Watch</Factory><Session><Expressions><Expression><Expression>fill</Expression></Expression><Expression><Expression>text_buf</Expression></Expression><Expression><Expression>format_flag</Expression></Expression></Expressions><TabId>1</TabId><Column0>108</Column0><Column1>147</Column1><Column2>127</Column2><Column3>160</Column3></Session></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd4></Windows>
+      <SelectedTab>1</SelectedTab></Wnd1><Wnd3><Tabs><Tab><Identity>TabID-1295-28130</Identity><TabName>Source Browser</TabName><Factory>SourceBrowser</Factory><Session><TypeFilter>2147483647</TypeFilter><FileFilter>1</FileFilter></Session></Tab><Tab><Identity>TabID-13904-28303</Identity><TabName>Workspace</TabName><Factory>Workspace</Factory><Session><NodeDict><ExpandedNode>AVR2560</ExpandedNode><ExpandedNode>AVR2560/Output</ExpandedNode></NodeDict></Session></Tab></Tabs><SelectedTab>1</SelectedTab></Wnd3><Wnd5><Tabs><Tab><Identity>TabID-11863-18953</Identity><TabName>Watch</TabName><Factory>Watch</Factory><Session><Expressions><Expression><Expression>fill</Expression></Expression><Expression><Expression>text_buf</Expression></Expression><Expression><Expression>format_flag</Expression></Expression></Expressions><TabId>1</TabId><Column0>108</Column0><Column1>147</Column1><Column2>127</Column2><Column3>160</Column3></Session></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd5></Windows>
     <Editor>
       
       
       
       
-    <Pane><Tab><Factory>TextEditor</Factory><Filename>D:\KEYPAD\KEYPAD335_PMSM\source\mcu\display.c</Filename><XPos>0</XPos><YPos>1435</YPos><SelStart>30210</SelStart><SelEnd>30223</SelEnd></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>D:\KEYPAD\KEYPAD335_PMSM\source\main.c</Filename><XPos>0</XPos><YPos>245</YPos><SelStart>4060</SelStart><SelEnd>4060</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>D:\KEYPAD\KEYPAD335_PMSM\source\mcu\display.c</Filename><XPos>0</XPos><YPos>156</YPos><SelStart>493</SelStart><SelEnd>493</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>D:\KEYPAD\KEYPAD335_PMSM\source\main.c</Filename><XPos>0</XPos><YPos>245</YPos><SelStart>4060</SelStart><SelEnd>4060</SelEnd></Tab><ActiveTab>1</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
     <Positions>
       
       
       
       
       
-    <Top><Row0><Sizes><Toolbar-00b09920><key>iaridepm.enu1</key></Toolbar-00b09920></Sizes></Row0><Row1><Sizes><Toolbar-031e5738><key>debuggergui.enu1</key></Toolbar-031e5738></Sizes></Row1></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>750</Bottom><Right>424</Right><x>-2</x><y>-2</y><xscreen>1277</xscreen><yscreen>203</yscreen><sizeHorzCX>1002355</sizeHorzCX><sizeHorzCY>204431</sizeHorzCY><sizeVertCX>334380</sizeVertCX><sizeVertCY>757301</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>174</Bottom><Right>1276</Right><x>-2</x><y>-2</y><xscreen>1278</xscreen><yscreen>176</yscreen><sizeHorzCX>1003140</sizeHorzCX><sizeHorzCY>177241</sizeHorzCY><sizeVertCX>106750</sizeVertCX><sizeVertCY>177241</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes><Wnd4><Rect><Top>0</Top><Left>0</Left><Bottom>0</Bottom><Right>7</Right><x>-2</x><y>-2</y><FloatX>1628</FloatX><FloatY>143</FloatY><FloatWidth>254</FloatWidth><FloatHeight>668</FloatHeight><xscreen>166</xscreen><yscreen>200</yscreen><sizeHorzCX>130298</sizeHorzCX><sizeHorzCY>201410</sizeHorzCY><sizeVertCX>130298</sizeVertCX><sizeVertCY>201410</sizeVertCY></Rect></Wnd4></Sizes></Float></Positions>
+    <Top><Row0><Sizes><Toolbar-00b0a200><key>iaridepm.enu1</key></Toolbar-00b0a200></Sizes></Row0><Row1><Sizes><Toolbar-03a58f18><key>debuggergui.enu1</key></Toolbar-03a58f18></Sizes></Row1></Top><Left><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>750</Bottom><Right>424</Right><x>-2</x><y>-2</y><xscreen>1277</xscreen><yscreen>203</yscreen><sizeHorzCX>1002355</sizeHorzCX><sizeHorzCY>204431</sizeHorzCY><sizeVertCX>334380</sizeVertCX><sizeVertCY>757301</sizeVertCY></Rect></Wnd3></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>174</Bottom><Right>1276</Right><x>-2</x><y>-2</y><xscreen>1278</xscreen><yscreen>176</yscreen><sizeHorzCX>1003140</sizeHorzCX><sizeHorzCY>177241</sizeHorzCY><sizeVertCX>106750</sizeVertCX><sizeVertCY>177241</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes><Wnd5><Rect><Top>0</Top><Left>0</Left><Bottom>0</Bottom><Right>0</Right><x>-2</x><y>-2</y><FloatX>1628</FloatX><FloatY>143</FloatY><FloatWidth>254</FloatWidth><FloatHeight>668</FloatHeight><xscreen>166</xscreen><yscreen>200</yscreen><sizeHorzCX>130298</sizeHorzCX><sizeHorzCY>201410</sizeHorzCY><sizeVertCX>130298</sizeVertCX><sizeVertCY>201410</sizeVertCY></Rect></Wnd5></Sizes></Float></Positions>
   </Desktop>
 </Project>
 

@@ -1,35 +1,6 @@
----- SCI_RequestData Matches (34 in 3 files) ----
-Display.c (source\mcu):		//SCI_RequestData(Local_Remote);
-Display.c (source\mcu):		SCI_RequestData(2310);
-Display.c (source\mcu):		SCI_RequestData(2311);
-Display.c (source\mcu):		SCI_RequestData(2312);
-Display.c (source\mcu):		SCI_RequestData(2313);
-Display.c (source\mcu):		SCI_RequestData(2314);
-Display.c (source\mcu):		SCI_RequestData(2315);
-Display.c (source\mcu):		SCI_RequestData(2316);
-Display.c (source\mcu):		SCI_RequestData(2317);
-Display.c (source\mcu):		SCI_RequestData(2318);
-Display.c (source\mcu):		SCI_RequestData(2319);
-Display.c (source\mcu):		SCI_RequestData(2320);
-Display.c (source\mcu):		SCI_RequestData(2321);
-Display.c (source\mcu):		SCI_RequestData(2322);
-Display.c (source\mcu):		SCI_RequestData(2323);
-Display.c (source\mcu):		SCI_RequestData(2342);
-Display.c (source\mcu):		SCI_RequestData(2343);
-Display.c (source\mcu):		SCI_RequestData(2344);
-Display.c (source\mcu):		SCI_RequestData(2354);
-Display.c (source\mcu):		SCI_RequestData(2355);
-Display.c (source\mcu):		SCI_RequestData(2381);
-Display.c (source\mcu):		SCI_RequestData(2390);
-Display.c (source\mcu):		SCI_RequestData(2391);
-Display.c (source\mcu):		SCI_RequestData(2392);
-Display.c (source\mcu):		SCI_RequestData(2393);
-Display.c (source\mcu):		SCI_RequestData(2394);
-Display.c (source\mcu):		SCI_RequestData(2395);
-Display.c (source\mcu):		SCI_RequestData(2396);
-Display.c (source\mcu):		SCI_RequestData(2397);
-Display.c (source\mcu):		SCI_RequestData(2398);
-Display.c (source\mcu):		SCI_RequestData(2399);
-rs232_MMItoPANEL.c (source\mcu):			SCI_RequestData(gRequestAddr);
-rs232_MMItoPANEL.c (source\mcu):void SCI_RequestData(unsigned int addr)
-rs232_MMItoPANEL.h (source\mcu):void SCI_RequestData(unsigned int addr);
+---- MODE_5u_mA_V Matches (5 in 1 files) ----
+Display.c (source\mcu):#define MODE_5u_mA_V 32
+Display.c (source\mcu):	else if(mode == MODE_5u_mA_V)
+Display.c (source\mcu):		SYS_ParameterDisplay(MODE_5u_mA_V);
+Display.c (source\mcu):		SYS_ParameterDisplay(MODE_5u_mA_V);
+Display.c (source\mcu):		SYS_ParameterDisplay(MODE_5u_mA_V);

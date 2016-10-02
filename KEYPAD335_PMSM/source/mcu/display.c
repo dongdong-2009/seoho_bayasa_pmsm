@@ -163,6 +163,7 @@
 #define MODE_1d_3u_mA_V 72
 #define MODE_2d_2u_V 73
 #define MODE_2d_2u_mA 74
+#define MODE_1d_3u_VkRPM 70
 
 #define MODE_51 75
 #define MODE_2d_2u_A 76
@@ -805,10 +806,10 @@ __flash char  PAGE_DIR_2_17_XX[52][17]={
 "P17.1 Min. Speed",
 "P17.2 Max. Speed",
 "P17.3 OS_Limit  ",
-"P17.4 Rsv_04    ",
+"P17.4 Base Speed",
 "P17.5 Start_Flux",
 "P17.6 Base Flux ",
-"P17.7 SF_End_Spd",
+"P17.7 Acc_Tq_Lmt",
 "P17.8 BF_St_Spd ",
 "P17.9 FW_Voltage",
 "P17.10 FW_Tm_Con",
@@ -1826,6 +1827,21 @@ void SYS_ParameterDisplay(unsigned char mode)
           
 
 	}
+	else if(mode == MODE_1d_3u_VkRPM)
+	{
+		if(!Edit_flag)
+		{
+			CLCD_string(0xC0,(char*)_TEXT("     % 1d.%03u  VkRPM",(int)Temporary/1000,Temporary%1000));
+			CLCD_cursor_OFF();
+		}
+		else
+		{
+			CLCD_string(0xC0,(char*)_TEXT("     % 1d.%03u  VkRPM",(int)edit_Temp/1000,edit_Temp%1000));
+			SYS_cursor_ON_Mode(CURSOR_MODE_7);
+		}
+          
+
+	}        
 	else if(mode == MODE_3d_1u_mV)
 	{
 		if(!Edit_flag)
@@ -4329,7 +4345,7 @@ void SYS_2_21(void)
 	if(KeyState.KeyValue == ESC)MenuDisplay = SYS_2;
 	else if(KeyState.KeyValue == DN)MenuDisplay = SYS_2_17;
 	else if(KeyState.KeyValue == UP)MenuDisplay = SYS_2_23;
-	else if(KeyState.KeyValue == ENTER)MenuDisplay = SYS_2_21_06;
+	else if(KeyState.KeyValue == ENTER)MenuDisplay = SYS_2_21_10;
 	
 	if(RefreshFlag)
 	{
@@ -12893,7 +12909,7 @@ void SYS_2_17_04(void)
 	{
 		Temporary = ReadDataMem(1154);
 		CLCD_string(0x80,(char*)_cpy_flash2memory(&PAGE_DIR_2_17_XX[4][0]));
-		SYS_ParameterDisplay(MODE_5u_s);
+		SYS_ParameterDisplay(MODE_2d_2u_kRPM);
 	}
 }
 void SYS_2_17_05(void)
@@ -12940,7 +12956,7 @@ void SYS_2_17_07(void)
 	{
 		if(KeyState.KeyValue == ESC)MenuDisplay = SYS_2_17;
 		else if(KeyState.KeyValue == DN)MenuDisplay = SYS_2_17_06;
-		else if(KeyState.KeyValue == UP)MenuDisplay = SYS_2_17_08;
+		else if(KeyState.KeyValue == UP)MenuDisplay = SYS_2_17_11;
 		else if(KeyState.KeyValue == ENTER)SYS_AccessLevel_Mode( LEVEL_0);
 	}
 	else
@@ -13016,7 +13032,7 @@ void SYS_2_17_11(void)
 	if(!Edit_flag)
 	{
 		if(KeyState.KeyValue == ESC)MenuDisplay = SYS_2_17;
-		else if(KeyState.KeyValue == DN)MenuDisplay = SYS_2_17_10;
+		else if(KeyState.KeyValue == DN)MenuDisplay = SYS_2_17_07;
 		else if(KeyState.KeyValue == UP)MenuDisplay = SYS_2_17_12;
 		else if(KeyState.KeyValue == ENTER)SYS_AccessLevel_Mode( LEVEL_0);
 	}
@@ -13785,7 +13801,7 @@ void SYS_2_17_51(void)
 		else if(KeyState.KeyValue == ENTER)SYS_AccessLevel_Mode( LEVEL_0);
 	}
 	else
-	SYS_ParameterEdt(1201,  edit_Temp, EDIT_MODE_0_1);
+	SYS_ParameterEdt(1201,  edit_Temp, EDIT_MODE_4);
 
 	if(RefreshFlag)
 	{
@@ -16603,7 +16619,7 @@ void SYS_2_21_12(void)
 	{
 		if(KeyState.KeyValue == ESC)MenuDisplay = SYS_2_21;
 		else if(KeyState.KeyValue == DN)MenuDisplay = SYS_2_21_11;
-		else if(KeyState.KeyValue == UP)MenuDisplay = SYS_2_21_13;
+		else if(KeyState.KeyValue == UP)MenuDisplay = SYS_2_21_10;
 		else if(KeyState.KeyValue == ENTER)SYS_AccessLevel_Mode( LEVEL_0);
 	}
 	else
@@ -16613,7 +16629,7 @@ void SYS_2_21_12(void)
 	{
 		Temporary = ReadDataMem(1562);
 		CLCD_string(0x80,(char*)_cpy_flash2memory(&PAGE_DIR_2_21_XX[12][0]));
-		SYS_ParameterDisplay(MODE_3d_1u_VkRPM);
+		SYS_ParameterDisplay(MODE_1d_3u_VkRPM);
 	}
 }
 void SYS_2_21_13(void)
