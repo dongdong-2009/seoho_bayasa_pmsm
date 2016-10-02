@@ -1,0 +1,10 @@
+---- fill Matches (9 in 2 files) ----
+Debug_printf.c (source\mcu):  unsigned char fill;
+Debug_printf.c (source\mcu):    fill=0;  //no formatting
+Debug_printf.c (source\mcu):      fill=format_flag;
+Debug_printf.c (source\mcu):     while(width--) *--ptr = fill; //insert padding chars		      
+Display.c (source\mcu):	unsigned char fill;
+Display.c (source\mcu):		fill=0;  //no formatting
+Display.c (source\mcu):			fill=format_flag;
+Display.c (source\mcu):				while(width--) *--ptr = fill; //insert padding chars	
+Display.c (source\mcu):					else *--ptr = fill;
