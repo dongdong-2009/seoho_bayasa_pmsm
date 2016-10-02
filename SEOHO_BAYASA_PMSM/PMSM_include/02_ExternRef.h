@@ -266,6 +266,7 @@ extern Uint16 P_rate;
 
 // SCI Communication Variables
 // File Name : 12_SCI_BC.c
+/*
 	extern unsigned int SciC_RxStep;
 	extern unsigned int SciC_RxFlag;
 	extern unsigned int SciC_TxFlag;
@@ -295,14 +296,14 @@ extern Uint16 P_rate;
 	extern char scic_rx_buf[SCIC_BUF_SIZE+1];
 	extern char scic_rxd;
 
-
+*/
 
 	extern MODE		mode;
 	extern FLAG 	Flag;
 	extern CNTL_FLAG cnlt_flag;
 	extern PARAMETER P;
 	extern OPERATION OP;
-	extern CRC_flg	CRC;
+//	extern CRC_flg	CRC;
 	extern TIME 	time;
 	extern void Write_Time(TIME time);
 	extern void Read_Time(TIME *time);

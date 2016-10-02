@@ -562,19 +562,6 @@ typedef struct
     Uint16 second;
 } TIME;
 
-// SCI Communication Variables
-// File Name : 12_SCI_BC.c
-typedef	union
-{
-	unsigned Word;
-	struct
-	{
-		unsigned b0	:8;	// CRC16 하위 바이트
-		unsigned b1	:8;	// CRC16 상위 바이트
-	} Byte;
-} CRC_flg ;
-
-
 //--------------------------------------//
 #endif
 

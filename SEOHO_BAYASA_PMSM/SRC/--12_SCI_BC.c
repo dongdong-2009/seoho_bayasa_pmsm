@@ -1,59 +1,126 @@
-/*****************************************************************************
-*
-* File Name: SCI_BC.C
-*
-* Description: SCI_BC driver
-*
-* Modules Included:
-*
-*****************************************************************************/
+#include "00_main_def.h"
+extern int time_share;
+#define	CPUCLK			150000000L							// CPU Main Clock
+#define	SCIB_LSPCLK		(CPUCLK/4)							// Peripheral Low Speed Clock for SCI-B
+#define	SCIB_BAUDRATE	115200L								// SCI-B Baudrate
+#define	SCIB_BRR_VAL	(SCIB_LSPCLK/(8*SCIB_BAUDRATE)-1)	// SCI-B BaudRate 설정 Register 값
+
+#define	SCIC_LSPCLK		(CPUCLK/4)							// Peripheral Low Speed Clock for SCI-C
+#define	SCIC_BAUDRATE	19200L								// SCI-C Baudrate
+//#define	SCIC_BAUDRATE	9600L								// SCI-C Baudrate
+#define	SCIC_BRR_VAL	(SCIC_LSPCLK/(8*SCIC_BAUDRATE)-1)	// SCI-C BaudRate 설정 Register 값
+
+/* BPS 에러율 *****************************************************************
+*    BPS	   CPUCLK	  LSPCLK	         BRR_VAL	     BPS	error
+*   4800	150000000	37500000	975.5625	976 	4797.851 	-0.045
+*   9600	150000000	37500000	487.28125	487 	9605.533 	0.058
+*  19200	150000000	37500000	243.140625	243 	19211.066 	0.058
+*  38400	150000000	37500000	121.0703125	121 	38422.131 	0.058
+*  57600	150000000	37500000	80.38020833	80 		57870.370 	0.469
+* 115200	150000000	37500000	39.69010417	40 		114329.268 	-0.756
+******************************************************************************/
+
+
+
+#define	SCIB_TX_START	{	if(ScibRegs.SCICTL2.bit.TXRDY){						\
+								ScibRegs.SCICTL2.bit.TXINTENA=1;				\
+								ScibRegs.SCITXBUF = scib_tx_buf[scib_tx_pos++];	\
+								if(scib_tx_pos >= SCIB_BUF_SIZE) scib_tx_pos=0;	\
+							}													\
+							else ScibRegs.SCICTL2.bit.TXINTENA=1;				\
+						}
+
+#define	SCIB_TX_STOP	ScibRegs.SCICTL2.bit.TXINTENA=0
+
+#define	SCIC_TX_START	{	if(ScicRegs.SCICTL2.bit.TXRDY){						\
+								ScicRegs.SCICTL2.bit.TXINTENA=1;				\
+								ScicRegs.SCITXBUF = scic_tx_buf[scic_tx_pos++];	\
+								if(scic_tx_pos >= SCIC_BUF_SIZE) scic_tx_pos=0;	\
+							}													\
+							else ScicRegs.SCICTL2.bit.TXINTENA=1;				\
+					}
+
+#define	SCIC_TX_STOP	ScicRegs.SCICTL2.bit.TXINTENA=0
+
+//---------------------------------------------------------
+#define	GEN_POLYNOMAL	0x8821		// CRC 젯수
+
+#define QUERY		0x01
+#define SEND		0x02
+#define RESPONSE	0x03
+#define REQUEST		0x04
+
+
+// SCI-B, SCI-C Interrupt Service Function 선언
+//interrupt void scib_tx_isr(void);
+//interrupt void scib_rx_isr(void);
+interrupt void scic_tx_isr(void);
+interrupt void scic_rx_isr(void);
+//#pragma CODE_SECTION(scib_tx_isr, "ramfuncs");
+//#pragma CODE_SECTION(scib_rx_isr, "ramfuncs");
+#pragma CODE_SECTION(scic_tx_isr, "ramfuncs");
+#pragma CODE_SECTION(scic_rx_isr, "ramfuncs");
+
+//void CRC_16(unsigned char input);
+unsigned int CRC16( unsigned char * pucFrame,unsigned int usLen );
+#pragma CODE_SECTION(CRC16, "ramfuncs");
+void SCIC_Process(void);
+#pragma CODE_SECTION(SCIC_Process, "ramfuncs"); 
 
 /************************************************************************/
-/* INCLUDE                                                              */
+/*      Initialize SCI                                                  */
 /************************************************************************/
+/*---------------------------------------------*/
+/*      Initialize SCI                         */
+/*---------------------------------------------*/
+/*
+void scib_init(void)
+{
+	ScibRegs.SCIFFTX.all = 0x8000;			// FIFO reset
+ 	ScibRegs.SCIFFCT.all = 0x4000;			// Clear ABD(Auto baud bit)
+ 	
+ 	ScibRegs.SCICCR.all = 0x0007;  			// 1 stop bit,  No loopback 
+                                   			// No parity,8 char bits,
+                                   			// async mode, idle-line protocol
+	ScibRegs.SCICTL1.all = 0x0003; 			// enable TX, RX, internal SCICLK, 
+                                   			// Disable RX ERR, SLEEP, TXWAKE
 
-//#include	<All_Header.h>
-//#include	<All_Extern_Variables.h>
-//#include "main_def.h"//dcdc
-#include "00_main_def.h"//pmsm
-#include 	"SCI_BC.h"
+	ScibRegs.SCICTL2.bit.RXBKINTENA = 1;	// RX/BK INT ENA=1,
+	ScibRegs.SCICTL2.bit.TXINTENA = 1;		// TX INT ENA=1,
 
+  	ScibRegs.SCIHBAUD = SCIB_BRR_VAL >> 8;
+  	ScibRegs.SCILBAUD = SCIB_BRR_VAL & 0xff;
 
-unsigned int EEPROM_WRITE_ENABLE_Rx = 0;
-unsigned int EEPROM_WRITE_ENABLE_Tx = 0;
-//변수 통신 관련
-Uint16 Rx_index= 0;
-Uint16 Tx_index= 0;
-Uint16 TxIntervalCnt= 0;
-Uint16 TxInterval_1s= 0;
-int Dummy_comm= 0;
-CRC_flg	CRC ;
-long Test_count_Rx= 0;
-long Test_count_Tx= 0;
-int Rx_counter_1s= 0;
-int Tx_counter_1s= 0;
-long CRC_check_counter= 0;
+	ScibRegs.SCICTL1.all = 0x0023;			// Relinquish SCI from Reset  
+    
+	// Initialize SCI-B RX interrupt
+  	EALLOW;
+	PieVectTable.SCIRXINTB = &scib_rx_isr;
+  	PieVectTable.SCITXINTB = &scib_tx_isr;
+   
+  // Enable internal pull-up for the selected pins 
+	GpioCtrlRegs.GPAPUD.bit.GPIO23 = 0; // Enable pull-up for GPIO11 (SCIRXDB)
+	GpioCtrlRegs.GPAPUD.bit.GPIO22 = 0;  // Enable pull-up for GPIO9  (SCITXDB)
 
-/* Variables for Serial Communication  */
-char scib_tx_buf[SCIB_BUF_SIZE+1];
-char scib_tx_pos=0, scib_tx_end=0;
-char scib_rx_buf[SCIB_BUF_SIZE+1];
+	// Set qualification for selected pins to asynch only 
+	GpioCtrlRegs.GPAQSEL2.bit.GPIO23 = 3;  // Asynch input GPIO11 (SCIRXDB)
 
-char scib_rxd=' ';
+	// Configure SCI-B pins using GPIO regs
+	GpioCtrlRegs.GPAMUX2.bit.GPIO23 = 3;   // Configure GPIO11 for SCIRXDB operation
+	GpioCtrlRegs.GPAMUX2.bit.GPIO22 = 3;    // Configure GPIO9 for SCITXDB operation
+	EDIS;
 
-char scic_tx_buf[SCIC_BUF_SIZE+1];
-char scic_tx_pos=0, scic_tx_end=0;
-char scic_rx_buf[SCIC_BUF_SIZE+1];
+  // Enable CPU INT9 for SCI-B
+	IER |= M_INT9;
+	
+  // Enable SCI-B RX INT in the PIE: Group 9 interrupt 3
+	PieCtrlRegs.PIEIER9.bit.INTx3 = 1;
 
-char scic_rxd=' '; 
+  // Enable SCI-B TX INT in the PIE: Group 9 interrupt 4
+	PieCtrlRegs.PIEIER9.bit.INTx4 = 1;
+}
+*/
 
-//-- Serial Data Stack  
-WORD Data_Registers[Buf_MAX];
-WORD CAN_Registers[Buf_MAX];
-WORD SCI_Registers[Buf_MAX]; 
-
-
-extern float Tsamp;
 
 static const char aucCRCHi[] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
@@ -105,7 +172,7 @@ static const char aucCRCLo[] = {
     0x41, 0x81, 0x80, 0x40
 };
 
-#pragma CODE_SECTION(CRC16, "ramfuncs");
+
 unsigned int CRC16( unsigned char * pucFrame,unsigned int usLen )
 {
     char           ucCRCHi = 0xFF;
@@ -114,62 +181,14 @@ unsigned int CRC16( unsigned char * pucFrame,unsigned int usLen )
 
     while( usLen-- )
     {
-        iIndex = (ucCRCLo ^ *( pucFrame++ )) & 0x00FF;
-        ucCRCLo = ( char )((ucCRCHi ^ aucCRCHi[iIndex]) & 0x00FF);
+        iIndex = ucCRCLo ^ *( pucFrame++ );
+        ucCRCLo = ( char )( ucCRCHi ^ aucCRCHi[iIndex] );
         ucCRCHi = aucCRCLo[iIndex];
     }
-    return ( unsigned int )( ((ucCRCHi << 8) & 0xFF00) | (ucCRCLo & 0x00FF) );
+    return ( unsigned int )( ucCRCHi << 8 | ucCRCLo );
 }
 
 
-
-void scib_init(void)
-{
-	ScibRegs.SCIFFTX.all = 0x8000;			// FIFO reset
- 	ScibRegs.SCIFFCT.all = 0x4000;			// Clear ABD(Auto baud bit)
- 	
- 	ScibRegs.SCICCR.all = 0x0007;  			// 1 stop bit,  No loopback 
-                                   			// No parity,8 char bits,
-                                   			// async mode, idle-line protocol
-	ScibRegs.SCICTL1.all = 0x0003; 			// enable TX, RX, internal SCICLK, 
-                                   			// Disable RX ERR, SLEEP, TXWAKE
-
-	ScibRegs.SCICTL2.bit.RXBKINTENA = 1;	// RX/BK INT ENA=1,
-	ScibRegs.SCICTL2.bit.TXINTENA = 1;		// TX INT ENA=1,
-
-  	ScibRegs.SCIHBAUD = SCIB_BRR_VAL >> 8;
-  	ScibRegs.SCILBAUD = SCIB_BRR_VAL & 0xff;
-
-	ScibRegs.SCICTL1.all = 0x0023;			// Relinquish SCI from Reset  
-    
-	// Initialize SCI-B RX interrupt
-  	EALLOW;
-	PieVectTable.SCIRXINTB = &scib_rx_isr;
-  	PieVectTable.SCITXINTB = &scib_tx_isr;
-
-    /* Enable internal pull-up for the selected pins */
-	GpioCtrlRegs.GPAPUD.bit.GPIO19 = 0; // Enable pull-up for GPIO19 (SCIRXDB)
-	GpioCtrlRegs.GPAPUD.bit.GPIO18 = 0;  // Enable pull-up for GPIO18  (SCITXDB)
-
-	/* Set qualification for selected pins to asynch only */
-	GpioCtrlRegs.GPAQSEL2.bit.GPIO19 = 3;  // Asynch input GPIO19 (SCIRXDB)
-
-	/* Configure SCI-B pins using GPIO regs*/
-	GpioCtrlRegs.GPAMUX2.bit.GPIO19 = 2;   // Configure GPIO19 for SCIRXDB operation
-	GpioCtrlRegs.GPAMUX2.bit.GPIO18 = 2;    // Configure GPIO18 for SCITXDB operation
-
-	
-	EDIS;
-
-  // Enable CPU INT9 for SCI-B
-	IER |= M_INT9;
-	
-  // Enable SCI-B RX INT in the PIE: Group 9 interrupt 3
-	PieCtrlRegs.PIEIER9.bit.INTx3 = 1;
-
-  // Enable SCI-B TX INT in the PIE: Group 9 interrupt 4
-	PieCtrlRegs.PIEIER9.bit.INTx4 = 1;
-}
 
 void scic_init(){
 	ScicRegs.SCIFFTX.all = 0x8000;			// FIFO reset
@@ -208,14 +227,12 @@ void scic_init(){
 
     // Enable CPU INT8 for SCI-C
 	IER |= M_INT8;
-	
-    // Enable SCI-C RX INT in the PIE: Group 8 interrupt 5
+
+	// Enable SCI-C RX INT in the PIE: Group 8 interrupt 5
 	PieCtrlRegs.PIEIER8.bit.INTx5 = 1;
 
-    // Enable SCI-C TX INT in the PIE: Group 8 interrupt 6
+	// Enable SCI-C TX INT in the PIE: Group 8 interrupt 6
 	PieCtrlRegs.PIEIER8.bit.INTx6 = 1;
-
-
 }
 
 /************************************************************************/
@@ -273,12 +290,10 @@ void scic_tx_start(void)
 /*---------------------------------------------*/
 /*      Transmmit Character                    */
 /*---------------------------------------------*/
-
 void scib_putc(char d)
 {
 	scib_tx_buf[scib_tx_end++] = d;
 	if(scib_tx_end >= SCIB_BUF_SIZE) scib_tx_end = 0;
-	SCIB_TX_START;
 }
 
 void scic_putc(char d)
@@ -327,6 +342,7 @@ interrupt void scib_tx_isr(void)
 }
 
 //-----
+/*
 interrupt void scib_rx_isr(void)
 {
 	//------------------------------
@@ -337,22 +353,23 @@ interrupt void scib_rx_isr(void)
 	scib_putc(scib_rxd);
 	scib_puts("\r\n");
 	
-	/*
+
 	// 버퍼에 저장하기만 하는 경우
-    scib_rx_buf[scib_rx_end++] = scib_rxd;
-    if (scib_rx_end >= SCIC_BUF_SIZE) scib_rx_end = 0;
-	*/
+//	scib_rx_buf[scib_rx_end++] = scib_rxd;
+//	if (scib_rx_end >= SCIC_BUF_SIZE) scib_rx_end = 0;
+
 	//------------------------------
 	SCIB_TX_START;
 	
 	// Acknowledge this interrupt to recieve more interrupts from group 9
 	PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;
 }
-
+*/
 //-----
 interrupt void scic_tx_isr(void)
 {
     tx_cnt++;
+//	delay_ms(1);
 	if(scic_tx_pos != scic_tx_end)
 	{
 		//if(ScicRegs.SCICTL2.bit.TXRDY)
@@ -370,30 +387,16 @@ interrupt void scic_tx_isr(void)
 	PieCtrlRegs.PIEACK.all = PIEACK_GROUP8;
 }
 
-
 //-----------------------------
 // 데이타 수신
 //-----------------------------
-unsigned int SciC_RxStep=0;
-unsigned int SciC_RxFlag=0;
-unsigned int SciC_TxFlag=0;
-unsigned int Communication_Fault_Cnt = 3;
-unsigned int Communication_Fault_Flag = 0;
 
-unsigned int Device_type=0;
-double TxIntervalTime = 25;
-
-unsigned int RxType=0;
-unsigned int RxAddr=0;
-unsigned int RxData=0;
-unsigned int RxCRC=0;
-unsigned char RxBuf[9];
-
+//unsigned char Temp_A;
+//unsigned char Temp_B;
+//unsigned int Temp_C;
 interrupt void scic_rx_isr(void)
 {
 	char c;
-	
-	if ( ScicRegs.SCIRXST.bit.RXERROR== 1) scic_init();
 
 	scic_rxd = ScicRegs.SCIRXBUF.all;
 	if(!SciC_RxFlag)
@@ -452,8 +455,15 @@ interrupt void scic_rx_isr(void)
 			RxBuf[8] = scic_rxd;
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+			//CRC.Word = 0;
+			//CRC_16(RxBuf[0]);
+			//CRC_16(RxBuf[1]);
+			//CRC_16(RxBuf[2]);
+			//CRC_16(RxBuf[3]);
+			//CRC_16(RxBuf[4]);
+			//CRC_16(RxBuf[5]);
+			//CRC_16(RxBuf[6]);
 
-			CRC.Word = 0;
 			CRC.Word = CRC16(RxBuf,7);
 			
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -478,12 +488,22 @@ interrupt void scic_rx_isr(void)
 
 					CRC.Word = CRC16(RxBuf,7);
 
-					for(c=0;c<7;c++)	scic_putc(RxBuf[c]);
+					for(c=0;c<7;c++)
+					{
+						scic_putc(RxBuf[c]);
+					
+					}
+					//scic_putc(RxBuf[0]);		CRC_16(RxBuf[0]);
+					//scic_putc(RxBuf[1]);		CRC_16(RxBuf[1]);
+					//scic_putc(RESPONSE);		CRC_16(RESPONSE);
+					//scic_putc(RxBuf[3]);		CRC_16(RxBuf[3]);
+					//scic_putc(RxBuf[4]);		CRC_16(RxBuf[4]);
+					//scic_putc(RxBuf[5]);		CRC_16(RxBuf[5]);
+					//scic_putc(RxBuf[6]);		CRC_16(RxBuf[6]);
 					scic_putc(CRC.Byte.b1);
 					scic_putc(CRC.Byte.b0);
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
 					SciC_TxFlag = 1;
 					//SCIC_TX_START;
 					Data_Registers[RxAddr] = RxData;
@@ -491,10 +511,11 @@ interrupt void scic_rx_isr(void)
 					// (110107 by HHH)
 					Rx_index= RxAddr;
 					Read_Data_Registers(Rx_index);
-					//Flag.Monitoring.bit.EEPROM_WRITE_ENABLE_Rx= 1;
+					Flag.Monitoring.bit.EEPROM_WRITE_ENABLE_Rx= 1;
 				}
 				else if(RxType == REQUEST)
 				{
+
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 					CRC.Word = 0;
@@ -507,6 +528,14 @@ interrupt void scic_rx_isr(void)
 
 					for(c=0;c<7;c++)scic_putc(RxBuf[c]);
 				
+					//CRC.Word = 0;
+					//scic_putc(RxBuf[0]);								CRC_16(RxBuf[0]);
+					//scic_putc(RxBuf[1]);								CRC_16(RxBuf[1]);
+					//scic_putc(SEND);									CRC_16(SEND);
+					//scic_putc(RxBuf[3]);								CRC_16(RxBuf[3]);
+					//scic_putc(RxBuf[4]);								CRC_16(RxBuf[4]);
+					//scic_putc((char)(Data_Registers[RxAddr]>>8)); CRC_16((char)(Data_Registers[RxAddr]>>8));
+					//scic_putc((char)Data_Registers[RxAddr]);		CRC_16((char)Data_Registers[RxAddr]);
 
 					scic_putc(CRC.Byte.b1);
 					scic_putc(CRC.Byte.b0);
@@ -515,158 +544,189 @@ interrupt void scic_rx_isr(void)
 					SCI_Registers[RxAddr] = 0;
 
 					SciC_TxFlag = 1;
-
-
-					Rx_counter_1s++;
-
-					if (Test_count_Rx>= 1./Tsamp)
-					{
-						Test_count_Rx= 0;
-						Rx_counter_1s= 0;
-					}
-
 					//SCIC_TX_START;
 
 					// (110107 by HHH)
 					Rx_index= RxAddr;
 					Read_Data_Registers(Rx_index);
-					//Flag.Monitoring.bit.EEPROM_WRITE_ENABLE_Rx= 1;
-				}
-				else if(RxType == RESPONSE)
-				{
-					SCI_Registers[RxAddr] = RxData;
-					//CAN_Registers[RxAddr]++;
+					Flag.Monitoring.bit.EEPROM_WRITE_ENABLE_Rx= 1;
 				}
 				else if(RxType == QUERY)
 				{
 					Communication_Fault_Cnt = 3;
-					TxIntervalTime = 	RxBuf[3]; // Device 별 시간변경 
-
+					if(RxData==1)
+					{
+					
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&	
+						//if(share_time == 8)	Device_type= 1;
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&	
+					}
+					else Device_type= 0;
 				}
-				
-			}
-			else
-			{
-				CRC_check_counter++;
 			}
 			SciC_RxStep=0;
 		}
 	}
 	else SciC_RxStep=0;
-
-
 	// Acknowledge this interrupt to recieve more interrupts from group 8
 	PieCtrlRegs.PIEACK.all = PIEACK_GROUP8;
 }
 
+//-----
+void scic_test(void)
+{
+    scic_puts("SCI-C Test\r\n");
+	SCIC_TX_START;
+}
 
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//===============================================================================================
+/*void CRC_16(unsigned char input)
+{
+	unsigned char 	i ;
+	unsigned int 	tmp_CRC ;
+
+	tmp_CRC=((CRC.Word >> 8) ^ input) << 8 ;
+	for (i = 0 ; i < 8 ; i++)
+	{
+		if (tmp_CRC & 0x8000) tmp_CRC = (tmp_CRC << 1) ^ GEN_POLYNOMAL ;
+		else tmp_CRC <<= 1 ;
+	}
+	CRC.Word = (CRC.Word << 8) ^ tmp_CRC ;
+}*/
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+// WORD SCI_Registers[Buf_MAX];
 WORD SCI_TxOffset=0;
-#pragma CODE_SECTION(SCIC_Process, "ramfuncs");
-unsigned char TxBuf[9];
 void SCIC_Process(void)
 {
-//	static int Tx_complete= 1;
-	 
-	 unsigned char 	c ;
+	float b = 0.;
+	unsigned char 	c ;
+	static int Tx_complete= 1;
+	int time_share = 0;
+	 unsigned char TxBuf[9];
 //Rx========================================
 	if(ScicRegs.SCIRXST.bit.RXERROR) scic_init(); // Detection of RXERROR
     if(SciC_RxFlag)	SciC_RxFlag = 0;
-
-
 //Tx========================================
-	// (110120 by HHH)
-	// data 가 변경될 경우 Tx 발생
-	// Tx_count 시간에 도달 하지 못한 경우 자동 대기 함
-
-//	if(TxIntervalCnt>= (Uint16)(1.e-3/Tsamp))
-	if(TxIntervalCnt>= (Uint16)( ((double)TxIntervalTime*1.e-3/Tsamp) ))
+// Tx_count 시간에 도달 하지 못한 경우 자동 대기 함
+//	SCI_TxOffset= 2310;
+	if(!Data_Registers[3195])
 	{
-		if (TxInterval_1s>=(Uint16)(1.0/Tsamp))
+		if (Device_type== 0)
 		{
-			CRC.Word = 0;
-			
-			TxBuf[0] = 0xAB;
-			TxBuf[1] = 0xCD;
-			TxBuf[2] = QUERY;
-			TxBuf[3] = 0;	
-			TxBuf[4]=  0;
-			TxBuf[5] = 0;
-			TxBuf[6] = DEV_PMSM;
-
-			CRC.Word = CRC16(TxBuf,7);
-
-			for(c=0;c<7;c++)	scic_putc(TxBuf[c]);
-			
-			scic_putc(CRC.Byte.b1);
-			scic_putc(CRC.Byte.b0);
-
-
-			SCIC_TX_START;
-
-			if(!Communication_Fault_Cnt)Communication_Fault_Flag=1;
-			else 
+			if(Tx_count_25ms>= (Uint16)(25e-3*Fsw-10.)) // 25.
 			{
-				Communication_Fault_Cnt--;
-				Communication_Fault_Flag=0;
-			}
-		
-			TxInterval_1s= 0;
-		}
-		else if(SciC_TxFlag)
-		{
-			Tx_counter_1s++;
+				if (Tx_count_1s>=(Uint16)(1.0*Fsw))
+				{
+					CRC.Word = 0;
+					b= (float)CpuTimer0Regs.TIM.all;
 
-			if (Test_count_Tx>= 1./Tsamp)
-			{
-				Test_count_Tx= 0;
-				Tx_counter_1s= 0;
-			}
+					b= (b-(float)CpuTimer0Regs.TIM.all)/150.;  // us Time
+					if (Interrupt_time_max<b)	Interrupt_time_max= b; 
 
-			SCIC_TX_START;
-			SciC_TxFlag=0;
-		}
-		else 
-		{
-			if ( (Data_Registers[SCI_TxOffset] != SCI_Registers[SCI_TxOffset]) )
-			{
-				CRC.Word = 0;
+//					scic_putc(0xAB);			CRC_16(0xAB);
+//					scic_putc(0xCD);			CRC_16(0xCD);
+//					scic_putc(QUERY);			CRC_16(QUERY);
+//					scic_putc(0);				CRC_16(0);
+//					scic_putc(0);				CRC_16(0);
+//					scic_putc(0);				CRC_16(0);
+//					scic_putc(0);				CRC_16(0);
+//					scic_putc(CRC.Byte.b1);
+//					scic_putc(CRC.Byte.b0);
 
-				TxBuf[0] = 0xAB;
-				TxBuf[1] = 0xCD;
-				TxBuf[2] = SEND;
-				TxBuf[3] = (char)((SCI_TxOffset>>8) & 0x00FF);	
-				TxBuf[4]=  (char)(SCI_TxOffset & 0x00FF);
-				TxBuf[5] = (char)((Data_Registers[SCI_TxOffset]>>8) & 0x00FF);
-				TxBuf[6] = (char)(Data_Registers[SCI_TxOffset] & 0x00FF);
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+					CRC.Word = 0;
+					
+					TxBuf[0] = 0xAB;
+					TxBuf[1] = 0xCD;
+					TxBuf[2] = QUERY;
+					TxBuf[3] = 0;	
+					TxBuf[4]=  0;
+					TxBuf[5] = 0;
+					TxBuf[6] = 0;
 
-				CRC.Word = CRC16(TxBuf,7);
+					CRC.Word = CRC16(TxBuf,7);
 
-				TxBuf[7] = CRC.Byte.b1;
-				TxBuf[8] = CRC.Byte.b0;
+					for(c=0;c<7;c++)	scic_putc(TxBuf[c]);
+					
+					scic_putc(CRC.Byte.b1);
+					scic_putc(CRC.Byte.b0);
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-				for(c=0;c<7;c++)	scic_putc(TxBuf[c]);
+					SCIC_TX_START;
+
+					if(!Communication_Fault_Cnt)Communication_Fault_Flag=1;
+					else 
+					{
+						Communication_Fault_Cnt--;
+						Communication_Fault_Flag=0;
+					}
 				
-				scic_putc(CRC.Byte.b1);
-				scic_putc(CRC.Byte.b0);
+					Tx_count_1s= 0;
+				}
+				else if(SciC_TxFlag)
+				{
+					SCIC_TX_START;
+					SciC_TxFlag=0;
+				}
+				else 
+				{
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&				
+					CRC.Word = 0;
+					TxBuf[0] = 0xAB;
+					TxBuf[1] = 0xCD;
+					TxBuf[2] = SEND;
+					TxBuf[3] = ((char)(SCI_TxOffset>>8));	
+					TxBuf[4]=  ((char)SCI_TxOffset);
+					TxBuf[5] = (char)(Data_Registers[SCI_TxOffset]>>8);
+					TxBuf[6] = (char)Data_Registers[SCI_TxOffset];
 
-				SCIC_TX_START;
-				//CAN_Registers[SCI_TxOffset]++;
+					CRC.Word = CRC16(TxBuf,7);
 
-			// (110107 by HHH)
-			Tx_index= (int)SCI_TxOffset;
-			//Flag.Monitoring.bit.EEPROM_WRITE_ENABLE_Tx= 1;
+					for(c=0;c<7;c++)	scic_putc(TxBuf[c]);
+					
+					scic_putc(CRC.Byte.b1);
+					scic_putc(CRC.Byte.b0);
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+					SCIC_TX_START;
 
+					Tx_index= (int)SCI_TxOffset;
+					SCI_TxOffset ++;
+					Tx_complete= 1;
+				}
+				if( time_share == 8){  time_share = 0,	Tx_count_25ms= 0;}
 			}
-			SCI_TxOffset ++;
+
+			if ( (Data_Registers[SCI_TxOffset] == SCI_Registers[SCI_TxOffset])&&(Tx_complete== 1) )
+				SCI_TxOffset ++;
+			else Tx_complete= 0;
+			if(Buf_MAX <= SCI_TxOffset)	SCI_TxOffset = 0;
 		}
-
-		TxIntervalCnt= 0;
+		else
+		{
+			if (Tx_count_1s>=(Uint16)(Fsw))
+			{
+				if(!Communication_Fault_Cnt) Communication_Fault_Flag=1;
+				else 
+				{
+					Communication_Fault_Cnt--;
+					Communication_Fault_Flag=0;
+				}
+				Tx_count_1s= 0;
+			}
+			else if(SciC_TxFlag)
+			{
+				SCIC_TX_START;
+				SciC_TxFlag=0;
+			}
+		}
 	}
-
-	if ( (Data_Registers[SCI_TxOffset] == SCI_Registers[SCI_TxOffset]) )	SCI_TxOffset ++;
-
-	if(Buf_MAX <= SCI_TxOffset)	SCI_TxOffset = 0;
-
 }
-
-

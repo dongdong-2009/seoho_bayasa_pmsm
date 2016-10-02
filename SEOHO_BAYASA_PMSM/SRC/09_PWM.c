@@ -187,8 +187,8 @@ void pwm_g1_setup(double sys_clk, double pwm_freq, double dead_time)
 interrupt void epwm1_timer_isr(void)
 {
 	float Temp;
-	Tx_count_25ms++;		// RYU
-	Tx_count_1s++;			// RYU  
+	TxIntervalCnt++;		// RYU
+	TxInterval_1s++;		// RYU 
 	watchdog_cnt ++;
 //	Temp= (float)CpuTimer0Regs.TIM.all;
 	// 초기 충전 체크 

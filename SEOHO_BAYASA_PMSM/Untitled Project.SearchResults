@@ -1,15 +1,43 @@
----- CRC.Word Matches (15 in 1 files) ----
-12_SCI_BC.c (src):			//CRC.Word = 0;
-12_SCI_BC.c (src):			CRC.Word = CRC16(RxBuf,6);
-12_SCI_BC.c (src):					CRC.Word = 0;
-12_SCI_BC.c (src):					CRC.Word = CRC16(RxBuf,6);
-12_SCI_BC.c (src):					CRC.Word = 0;
-12_SCI_BC.c (src):					CRC.Word = CRC16(RxBuf,6);
-12_SCI_BC.c (src):					//CRC.Word = 0;
-12_SCI_BC.c (src):	tmp_CRC=((CRC.Word >> 8) ^ input) << 8 ;
-12_SCI_BC.c (src):	CRC.Word = (CRC.Word << 8) ^ tmp_CRC ;
-12_SCI_BC.c (src):					CRC.Word = 0;
-12_SCI_BC.c (src):					CRC.Word = 0;
-12_SCI_BC.c (src):					CRC.Word = CRC16(TxBuf,6);
-12_SCI_BC.c (src):					CRC.Word = 0;
-12_SCI_BC.c (src):					CRC.Word = CRC16(TxBuf,6);
+---- Tsamp Matches (42 in 8 files) ----
+00_Main.c (src):			if(Init_Charge_cnt >= (float)Init_Charge_Time * 1e-3 / Tsamp)		// 초기 충전 시간 3초
+00_Main.c (src):				if(Init_Charge_cnt >= ((float)Init_Charge_Time + 100.) * 1e-3 / Tsamp)	// 초기 충전을 포함 한 3.1초 후 시퀀스 전환 
+02_ExternRef.h (pmsm_include):	extern float Tsamp;
+05_Fault.c (src):			else OL_TimeOver_Count += Tsamp;
+05_Fault.c (src):			if(OL_TimeOver_Count>0) OL_TimeOver_Count-=Tsamp;
+05_Fault.c (src):			else MaxCon_Curr_Count+=Tsamp; //95%			(float)(Max_Con_cur/100)
+05_Fault.c (src):			if(MaxCon_Curr_Count>0) MaxCon_Curr_Count-=Tsamp;
+07_current_controller.c (src)://	if(watchdog_cnt >=dog_time/Tsamp) ServiceDog(), watchdog_cnt = 0;
+07_current_controller.c (src):				// Current_Slop_Build_Up = a = Idse_ref_max * Tsamp;	// 1sec
+07_current_controller.c (src):						thetar_openloop = thetar_openloop + Wr_ref*Tsamp;
+07_current_controller.c (src):					a = Idse_ref_max * 0.5 * Tsamp;			// 2sec
+07_current_controller.c (src):				thetar_hat1 = BOUND_PI(thetar_openloop + 0.5 * Wr_ref*Tsamp);
+07_current_controller.c (src):				thetar_hat_cm1 = BOUND_PI(thetar_hat_cm + Wr_hat_cm*Tsamp*1.5);
+07_current_controller.c (src):				thetar_hat_cm  = BOUND_PI(thetar_hat_cm + Wr_hat_cm*Tsamp);
+07_current_controller.c (src):					// I_integ = Tsamp/Ls
+07_current_controller.c (src):					thetar_hat_cm1 = BOUND_PI(thetar_hat_cm + Wr_hat_cm*Tsamp*1.5); 
+07_current_controller.c (src):					thetar_hat_cm  = BOUND_PI(thetar_hat_cm + Wr_hat_cm*Tsamp);
+07_current_controller.c (src):						thetar_openloop = BOUND_PI(thetar_openloop + Wr_ref*Tsamp);		
+07_current_controller.c (src):						thetar_hat1 = BOUND_PI(thetar_openloop + 0.5 * Wr_ref*Tsamp);
+07_current_controller.c (src):							a = Idse_ref_max * 2 * Tsamp;			// 2sec : 40000, 1sec : 20000
+07_current_controller.c (src):						ref_slew_dn = 10000. * Tsamp;
+07_current_controller.c (src):	Vdc_eff = Vdc_measured*(1.0 - 2.0*Deadtime/Tsamp);
+08_system.c (src):	ref_slew_up = 1000. * Tsamp;	// 속도 증가 기울기 = 1000 * Tsamp * Fsw = 1000rpm/sec
+08_system.c (src):	ref_slew_dn = 1000. * Tsamp;
+08_system.c (src):	Ki_ccT = Wc_cc * Rs * Tsamp;
+08_system.c (src):    La = (2.0-a*Tsamp)/(2.0+a*Tsamp);
+08_system.c (src):    Lb = (a*Tsamp)/(2.0+a*Tsamp);
+08_system.c (src):	I_integ = Tsamp/Ls;
+08_system.c (src)://	Current_Slop_Build_Up = Idse_ref_max * Tsamp/Current_Build_Up_Time;
+08_system.c (src):	Current_Slop_Build_Up = Idse_ref_max * Tsamp/1.0;
+08_system.c (src)://	Current_Slop_ACC = Idse_ref_max * Tsamp/Current_Slop_Build_Up;
+08_system.c (src):	Current_Slop_ACC = Idse_ref_max * Tsamp/1.0;
+08_system.c (src):	Tsamp = 1.0/Fsw;
+08_system.c (src):	PWM_TMR_PERIOD = Tsamp * (SYS_CLK/2.); 
+09_PWM.c (src):	if (Retry_cnt_En)	Retry_cnt += Tsamp;
+12_SCI_BC.c (src):extern float Tsamp;
+12_SCI_BC.c (src):					if (Test_count_Rx>= 1./Tsamp)
+12_SCI_BC.c (src)://	if(TxIntervalCnt>= (Uint16)(1.e-3/Tsamp))
+12_SCI_BC.c (src):	if(TxIntervalCnt>= (Uint16)( ((double)TxIntervalTime*1.e-3/Tsamp) ))
+12_SCI_BC.c (src):		if (TxInterval_1s>=(Uint16)(1.0/Tsamp))
+12_SCI_BC.c (src):			if (Test_count_Tx>= 1./Tsamp)
+13_GlobalDef.c (src):	float Tsamp;

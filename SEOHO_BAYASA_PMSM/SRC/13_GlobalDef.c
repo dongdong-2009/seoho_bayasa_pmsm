@@ -261,6 +261,7 @@ Uint16 P_rate;
 
 // SCI Communication Variables
 // File Name : 12_SCI_BC.c
+/*
 	unsigned int SciC_RxStep=0;
 	unsigned int SciC_RxFlag=0;
 	unsigned int SciC_TxFlag=0;
@@ -292,7 +293,7 @@ Uint16 P_rate;
 	WORD Data_Registers[Buf_MAX];
 	WORD CAN_Registers[Buf_MAX];
 	WORD SCI_Registers[Buf_MAX];
-
+*/
 
 
 	MODE	mode;
@@ -301,6 +302,6 @@ Uint16 P_rate;
 	PARAMETER P;
 	OPERATION OP;
 	ADC		adc;
-	CRC_flg	CRC;
+//	CRC_flg	CRC;
 	TIME	time;
 #endif // __Global_Variable_Definitions_

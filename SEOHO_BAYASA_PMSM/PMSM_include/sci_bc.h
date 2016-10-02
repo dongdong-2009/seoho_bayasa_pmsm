@@ -14,8 +14,8 @@
 
 #include "DSP2833x_Device.h"     // DSP2833x Headerfile Include File
 #include "DSP2833x_Examples.h"   // DSP2833x Examples Include File
-#include "main_def.h"
-
+//#include "main_def.h"//dcdc
+#include "00_main_def.h"//pmsm
 
 
 

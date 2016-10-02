@@ -1,6 +1,7 @@
 	#include "DSP2833x_Device.h"   
 	#include "DSP2833x_Examples.h"   
 	#include "math.h"
+	#include "sci_bc.h"
 	#include "01_PrototypeRef.h"
 	#include "02_ExternRef.h"
 	#include "03_All_Struct_Variables.h"
