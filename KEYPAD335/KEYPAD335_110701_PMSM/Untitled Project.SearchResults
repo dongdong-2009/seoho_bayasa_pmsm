@@ -1,0 +1,3 @@
+---- SCI_SendData Matches (2 in 2 files) ----
+Display.c (source\mcu):			SCI_SendData(2374, 1);
+rs232_MMItoPANEL.h (source\mcu):void SCI_SendData(unsigned int addr, unsigned int data);
