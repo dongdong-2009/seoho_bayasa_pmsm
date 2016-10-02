@@ -73,6 +73,3 @@ LinkOrder=1
 ["CMD\F28335.cmd" Settings: "Release"]
 LinkOrder=1
 
-
-[Tools]
-ToolDeleteList 

@@ -1,0 +1,15 @@
+---- CRC.Word Matches (15 in 1 files) ----
+12_SCI_BC.c (src):			//CRC.Word = 0;
+12_SCI_BC.c (src):			CRC.Word = CRC16(RxBuf,6);
+12_SCI_BC.c (src):					CRC.Word = 0;
+12_SCI_BC.c (src):					CRC.Word = CRC16(RxBuf,6);
+12_SCI_BC.c (src):					CRC.Word = 0;
+12_SCI_BC.c (src):					CRC.Word = CRC16(RxBuf,6);
+12_SCI_BC.c (src):					//CRC.Word = 0;
+12_SCI_BC.c (src):	tmp_CRC=((CRC.Word >> 8) ^ input) << 8 ;
+12_SCI_BC.c (src):	CRC.Word = (CRC.Word << 8) ^ tmp_CRC ;
+12_SCI_BC.c (src):					CRC.Word = 0;
+12_SCI_BC.c (src):					CRC.Word = 0;
+12_SCI_BC.c (src):					CRC.Word = CRC16(TxBuf,6);
+12_SCI_BC.c (src):					CRC.Word = 0;
+12_SCI_BC.c (src):					CRC.Word = CRC16(TxBuf,6);
